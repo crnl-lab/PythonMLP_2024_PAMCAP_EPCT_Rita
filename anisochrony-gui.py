@@ -13,7 +13,7 @@ import pygame
 import random
 import sys
 from ehrlesamson    import * 
-from mlp            import MLP
+from mlpcore.mlp    import MLP
 import time
 
 
@@ -29,7 +29,6 @@ displayFlags = 0
 mainfont = None
 mainFontSize = 16
 screen = None
-FONTFILE = "fonts/VAG Rounded BT.ttf"
 
 CONTINUE_KEY  = [ pygame.K_SPACE ]
 RESPONSE_KEYS = [ pygame.K_r, pygame.K_i ]
@@ -41,7 +40,7 @@ def init():
 
     # Initialise the fonts
     global mainfont
-    mainfont = pygame.font.Font(FONTFILE, mainFontSize)
+    mainfont = pygame.font.SysFont("Times",mainFontSize) 
 
     screen = pygame.display.set_mode(displaySize,displayFlags)
     screen.convert()

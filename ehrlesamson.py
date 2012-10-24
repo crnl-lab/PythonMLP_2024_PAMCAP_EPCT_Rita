@@ -9,7 +9,7 @@ This is what Ehrle & Samson (2005) did too.
 """
 
 from subprocess import call # used to call the external player
-from task import Task
+from mlpcore.task import Task
 import math
 import numpy as np
 import wave
