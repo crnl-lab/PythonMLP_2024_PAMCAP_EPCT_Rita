@@ -11,7 +11,7 @@ import numpy as np
 import random
 
 
-from fileoutput import *
+from mlpcore.fileoutput import *
 
 
 
@@ -118,7 +118,7 @@ class MLP:
 
 
     def getsweetpoint( self,
-                       (a,m,_), 
+                       params, 
                        p,
                        task ):
         """
@@ -130,8 +130,10 @@ class MLP:
         The target_p is a probability from 0 to 1.
         """
 
+        (a,m,_)=params
+        
         if p<=a:
-            print "Error, calculating a sweet point below the false alarm rate!"
+            print ("Error, calculating a sweet point below the false alarm rate!")
             return None
 
         y = ((1-a)/(p-a))-1
@@ -169,13 +171,13 @@ class MLP:
         # Run one block of the MLP with the given task.
         # Here, task contains all the necessary configuration
         # parameters.
-        print "MLP "+task.NAME
+        print ("MLP "+task.NAME)
 
         # Input the participant name if we don't know it already
         if participant=="":
-            participant = raw_input("Participant name: ")
+            participant = input("Participant name: ")
         else:
-            print "Participant: ",participant
+            print ("Participant: ",participant)
         self.participant=participant
 
         # Initialise file output
@@ -187,11 +189,11 @@ class MLP:
         # The initial stimulus "guess"
         stim = task.INITIAL_STIM
 
-        print "Prepared %i trials"%len(self.trials)
+        print ("Prepared %i trials"%len(self.trials))
 
         if preKeypress:
             # Wait for a keypress to start
-            raw_input("Press <ENTER> to start the experiment.")
+            input("Press <ENTER> to start the experiment.")
 
         # The main loop for this block
         for i in range(len(self.trials)):
@@ -219,9 +221,9 @@ class MLP:
 
 
         (a,m,p)=likelihoodestimate
-        print
-        print "In %i trials, using %i hypotheses"%(len(self.trials),len(self.hypotheses))
-        print "the maximum likelihood estimate was at m=%.2f with false alarm estimate %.2f"%(m,a)
+        print ()
+        print ("In %i trials, using %i hypotheses"%(len(self.trials),len(self.hypotheses)))
+        print ("the maximum likelihood estimate was at m=%.2f with false alarm estimate %.2f"%(m,a))
 
         # That's all folks!
         self.fileoutput.closefiles(likelihoodestimate)

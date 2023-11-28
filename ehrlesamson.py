@@ -238,7 +238,7 @@ class EhrleSamson( Task ):
             resp = raw_input("Die Toene waren [ 0=regelmaessig 1=unregelmaessig ]? " )
             if resp=="1":   answer=True
             elif resp=="0": answer=False
-            else: print "Answer not understood! Enter your answer again."
+            else: print ("Answer not understood! Enter your answer again.")
 
         return answer
 

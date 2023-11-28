@@ -89,10 +89,10 @@ class Task:
         """ Get the participant's response for the given stimulus level. """
         resp=None
         while not resp in ["0","1"]:
-            resp = raw_input("Is there a meaning to life? Stimulus level: %f [ 0=no 1=yes ] "%stim )
+            resp = input("Is there a meaning to life? Stimulus level: %f [ 0=no 1=yes ] "%stim )
             if   resp=="1": answer=True
             elif resp=="0": answer=False
-            else: print "Answer not understood! Enter your answer again."
+            else: print ("Answer not understood! Enter your answer again.")
         return answer
         
 
