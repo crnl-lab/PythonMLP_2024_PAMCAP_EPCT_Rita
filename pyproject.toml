@@ -1,0 +1,37 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+
+[project]
+name = "pythonmlp"
+version = "0.0.1"
+authors = [
+  { name="Floris van Vugt", email="ftvanvugt@gmail.com" },
+]
+description = "Python implementation of the Maximum Likelihood Procedure"
+readme = "README.md"
+requires-python = ">=3.7"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Operating System :: OS Independent",
+]
+dependencies = [
+"numpy"
+]
+
+[project.urls]
+"Homepage" = "https://github.com/florisvanvugt/PythonMLP"
+
+
+# To use locally:
+#   pip3 install -e .
+
+# To upload a package to PyPI:
+# Sitting in the package root directory
+#   python3 -m build
+# creates dist/... stuff
+# Uploading
+#   python3 -m twine upload dist/*
+
+
