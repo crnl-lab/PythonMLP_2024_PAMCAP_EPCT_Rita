@@ -55,7 +55,7 @@ class MLP:
         print("-> {} hypotheses between {} and {}".format(self.hyp_n,self.hyp_min,self.hyp_max))
         print("-> false alarm rates : {}".format(", ".join([ str(f) for f in self.fa])))
         print("")
-    
+        
     
 
     def __init__(
@@ -113,7 +113,7 @@ class MLP:
         P_YES = [ optimalp(fa) for fa in self.fa ]
         
         # And we take the mean of these and use that as the tracking value
-        TARGET_P = np.mean(self.P_YES) # this is the tracking p-value, i.e. the performance for which we find the stimulus value based on our current maximum likelihood estimate
+        TARGET_P = np.mean(P_YES) # this is the tracking p-value, i.e. the performance for which we find the stimulus value based on our current maximum likelihood estimate
 
         return TARGET_P
 
@@ -200,11 +200,11 @@ class MLP:
         """
         
         # Get the most probable psychmetric curve
-        candidate = self.getmaximumlikelihood()
+        candidate = self.get_ml()
         
         # Now we calculate the stimulus level corresponding to the "sweet point",
         # the target p-value that we track, for the maximum likelihood estimate
-        stim = self.getsweetpoint(
+        stim = self.get_sweetpoint(
             candidate,
             self.calculate_target() )
 
