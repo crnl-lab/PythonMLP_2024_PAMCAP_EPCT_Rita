@@ -48,6 +48,15 @@ class MLP:
 
 
 
+    def print(self):
+
+        print("MLP object")
+        print("-> psychometric curve slope : {}".format(self.slope))
+        print("-> {} hypotheses between {} and {}".format(self.hyp_n,self.hyp_min,self.hyp_max))
+        print("-> false alarm rates : {}".format(", ".join([ str(f) for f in self.fa])))
+        print("")
+    
+    
 
     def __init__(
             self,
