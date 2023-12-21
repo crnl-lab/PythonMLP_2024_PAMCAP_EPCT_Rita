@@ -5,6 +5,12 @@ A python implementation of the Maximum Likelihood Procedure to establish psychop
 
 
 
+# Usage
+
+For now, check out the `tests/` directory for an illustration of this package.
+
+
+
 # Development
 
 Install latest development version from Github:
