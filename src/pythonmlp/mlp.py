@@ -16,12 +16,14 @@ import random
 
 ## This is the implementation of the psychometric function
 def pyes( x, a, m, k ):
-    # Return the probability of a "yes" response,
-    # given the logistic psychmetric function.
-    # x is the stimulus intensity,
-    # a is the false alarm rate
-    # k is the slope parameter (fiddle with this so it gives the right transition range)
-    # m is the mean of the distribution
+    """
+    Return the probability of a "yes" response,
+    given the logistic psychmetric function.
+     x is the stimulus intensity,
+     a is the false alarm rate
+     k is the slope parameter (fiddle with this so it gives the right transition range)
+     m is the mean of the distribution
+    """
     return a+((1-a)*(1/(1+np.exp(-k*(x-m)))))
 
 
@@ -50,11 +52,20 @@ class MLP:
 
     def print(self):
 
-        print("MLP object")
-        print("-> psychometric curve slope : {}".format(self.slope))
-        print("-> {} hypotheses between {} and {}".format(self.hyp_n,self.hyp_min,self.hyp_max))
-        print("-> false alarm rates : {}".format(", ".join([ str(f) for f in self.fa])))
+        print("--- MLP object ---")
+        print("Psychometric curve slope : {}".format(self.slope))
+        print("# of hypotheses: {}".format(len(self.hypotheses)))
+        print("     {} midpoints between {} and {}".format(self.hyp_n,self.hyp_min,self.hyp_max))
+        print("     false alarm rates : {}".format(", ".join([ str(f) for f in self.fa])))
         print("")
+
+        opts = self.get_max_like()
+        a_s, m_s, _ = zip(*opts)
+        print("# Maximum likelihood curves: {}".format(len(opts)))
+        print("    Midpoints from {}-{}, FA rates from {}-{}".format(min(m_s),max(m_s),min(a_s),max(a_s)))
+        print("")
+              
+        
         
     
 
@@ -62,17 +73,17 @@ class MLP:
             self,
 
             # The slope of our psychometric curves
-            slope = .1,
+            slope, # e.g. = .1,
             
             # The minimum and maximum of the hypothesised thresholds
-            hyp_min = 0,
-            hyp_max = 200,
+            hyp_min, # e.g. = 0,
+            hyp_max, # e.g. = 200,
 
             # The number of hypotheses
-            hyp_n = 200,
+            hyp_n, # e.g. = 200,
             
             # Our false alarm rates (these will be crossed with the threshold hypotheses)
-            fa = [0.,.1,.2,.3,.4],
+            fa, # e.g. = [0.,.1,.2,.3,.4],
             
             # The number of trials
             # The number of catch trials (at the lowest stimulus level, to reduce biases in false alarm estimate)
@@ -107,7 +118,9 @@ class MLP:
 
 
     def calculate_target(self):
-        # Determine the tracking target
+        # Determine the tracking target, which is a target probability (p)
+        # on the psychometric curve for which we'll later try to find the corresponding
+        # stimulus level.
 
         # We calculate the optimal tracking p values for the different false alarm rates
         P_YES = [ optimalp(fa) for fa in self.fa ]
@@ -120,7 +133,7 @@ class MLP:
 
         
 
-    def update( self, x, answer, task ):
+    def update( self, x, answer ):
         # Given a subject's answer (yes=True or no=False) to stimulus intensity x,
         # update the likelihood of the hypotheses.
         # That is, for each hypotheses, calculate the probability p of
@@ -148,19 +161,30 @@ class MLP:
 
 
 
-    def get_ml(self):
-        """ Get the current maximum likelihood stimulus. """
+    def get_max_like(self):
 
+        # If there are several (due to being practically equal), just choose a random one
+        # among them
         # Now check for the maximum likelihood one
         maxp = max([ p for (_,_,p) in self.hypotheses ])
 
         # And then find the hypotheses that have this maximum
-        maxlikelihyps = [ (a,m,p) for (a,m,p) in self.hypotheses 
+        maxlikelihyps = [ (a,m,p)
+                          for (a,m,p) in self.hypotheses 
                           if p==maxp ]
 
+        return maxlikelihyps
+
+        
+
+    def get_ml(self):
+        """ Get the current maximum likelihood stimulus. """
+
+        opts = self.get_max_like()
+        
         # If there are several (due to being practically equal), just choose a random one
         # among them
-        return random.choice( maxlikelihyps )
+        return random.choice( opts )
 
 
 
