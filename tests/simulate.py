@@ -10,6 +10,7 @@ TRUTH_S = .1
 
 import numpy as np
 import pythonmlp
+import pandas as pd
 
 def answer(x):
     p = pythonmlp.pyes(x,TRUTH_A,TRUTH_M,TRUTH_S)
@@ -23,6 +24,8 @@ for stim in [0,50,100,200]:
 
 
 
+MAXSTIM = 200
+    
 mlp = pythonmlp.MLP(
 
     # The slope of our psychometric curves
@@ -30,7 +33,7 @@ mlp = pythonmlp.MLP(
     
     # The minimum and maximum of the hypothesised thresholds
     hyp_min = 0,
-    hyp_max = 200,
+    hyp_max = MAXSTIM,
     
     # The number of hypotheses
     hyp_n = 200,
@@ -40,3 +43,27 @@ mlp = pythonmlp.MLP(
 )
 
 
+
+# Now let's simulate trials
+
+stim = MAXSTIM # start at the maximum level
+
+trials = []
+for trial in range(50):
+
+    stim = stim if stim>0 else 0 # set to 0 if lower
+    ans = answer(stim)
+    mlp.update(stim,ans)
+    trials.append({
+        "trial":trial,
+        "stimulus":stim,
+        "response":ans
+        })
+    stim = mlp.next_stimulus()
+        
+
+print(pd.DataFrame(trials))
+mlp.print()
+
+m = mlp.get_midpoint_estimate()
+print("Midpoint estimate : {}  vs. ground truth : {}".format(m,TRUTH_M))

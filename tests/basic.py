@@ -28,6 +28,7 @@ mlp.print()
 print("Target p value {}".format(mlp.calculate_target()))
 
 
+mlp.plot()
 
 
 

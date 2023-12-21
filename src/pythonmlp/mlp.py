@@ -55,14 +55,20 @@ class MLP:
         print("--- MLP object ---")
         print("Psychometric curve slope : {}".format(self.slope))
         print("# of hypotheses: {}".format(len(self.hypotheses)))
-        print("     {} midpoints between {} and {}".format(self.hyp_n,self.hyp_min,self.hyp_max))
+        print("     {} midpoints between {:.3f} and {:.3f}".format(self.hyp_n,self.hyp_min,self.hyp_max))
         print("     false alarm rates : {}".format(", ".join([ str(f) for f in self.fa])))
         print("")
 
+        print("History: {} answer(s)".format(len(self.history)))
+        if len(self.history):
+            prop_yes = np.mean([ x['response'] for x in self.history])
+            print("     prop. yes response = {:.3f}".format(prop_yes))
+        
         opts = self.get_max_like()
         a_s, m_s, _ = zip(*opts)
         print("# Maximum likelihood curves: {}".format(len(opts)))
-        print("    Midpoints from {}-{}, FA rates from {}-{}".format(min(m_s),max(m_s),min(a_s),max(a_s)))
+        print("    Midpoints {:.3f} - {:.3f}, FA rates {} - {}".format(min(m_s),max(m_s),min(a_s),max(a_s)))
+        print("    Midpoint estimate : {:.3f}".format(self.get_midpoint_estimate()))
         print("")
               
         
@@ -112,7 +118,8 @@ class MLP:
                             for a in self.fa
                             for m in THRESHOLD_HYPOTHESES ]
 
-
+        # History
+        self.history = []
 
 
 
@@ -141,6 +148,8 @@ class MLP:
         # Then, we multiply the likelihood of that hypothesis with p.
         # We return the new list of hypotheses.
 
+        self.history.append({"stimulus":x,"response":answer})
+        
         newhyp = []
         for (a,m,p) in self.hypotheses:
 
@@ -238,17 +247,65 @@ class MLP:
 
 
     
+    def get_midpoint_estimate(self):
+        """ Return the current best estimate of the psychometric curve midpoint """
+
+        opts = self.get_max_like()
+        _, m_s, _ = zip(*opts)
+        return np.mean(m_s) # if there are several, just return the average
 
 
 
 
 
 
+    def plot(self):
 
+        maxp = max([ p for _,_,p in self.hypotheses ])
 
+        import matplotlib.pyplot as plt
+        import matplotlib.colors as colors
+        import matplotlib.cm as cm
 
+        stims = np.linspace(self.hyp_min,self.hyp_max,300)
+        plot_thickness = 3.5
+        for (a,m,p) in self.hypotheses:
+            pyess = np.array([ pyes(x,a,m,self.slope) for x in stims ])
+            plt.plot( stims, pyess, lw=(p/maxp)*plot_thickness,
+                      color=cm.jet(p),
+                      alpha=.5 )
 
+        # Then plot the maximum likelihood estimate nice and thick in a dashed line
+        for (a,m,p) in self.hypotheses:
+            pyess = np.array([ pyes(x,a,m,self.slope) for x in stims ])
+            if p==maxp:
+                plt.plot(
+                    stims, pyess, 
+                    '--',
+                    lw=2.5, 
+                    color="black",
+                    alpha=p/maxp
+                )
 
+        # Finally, we add the individual answers. The "yes" answers to on top (between 1. and 1.1)
+        # the "no" answers below (between -.1 and 0.) 
+        answercolor={ 0: "black",
+                      1: "white" }
+        for x in self.history:
+            stim=x["stimulus"]
+            answer=x["response"]
+
+            if answer==1: answer=1.05
+            if answer==0: answer=-.05
+            plt.plot( stim, answer+random.normalvariate(0,.02),
+                      'o', markersize=8, markeredgewidth=2, markeredgecolor="black",
+                      markerfacecolor=answercolor[x["response"]], alpha=.8 )
+
+        
+
+        plt.xlabel("Stimulus level")
+        plt.ylabel("Probability of saying 'yes'")
+        plt.show()
 
 
 
