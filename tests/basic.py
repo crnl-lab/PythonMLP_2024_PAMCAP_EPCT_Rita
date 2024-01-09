@@ -36,6 +36,7 @@ x = mlp.next_stimulus()
 print("Presenting stimulus {}".format(x))
 
 
+mlp.plot_hypotheses()
 
 
 

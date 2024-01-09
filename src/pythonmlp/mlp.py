@@ -310,9 +310,46 @@ class MLP:
 
 
 
+    def plot_hypotheses(self):
 
+        maxp = max([ p for _,_,p in self.hypotheses ])
 
+        fas = list(set([ a for (a,_,_) in self.hypotheses ]))
+        ms  = list(set([ m for (_,m,_) in self.hypotheses ]))
+        fas.sort()
+        ms.sort()
+        
+        print("Hello!")
 
+        import numpy as np
+        import matplotlib.pyplot as plt
+        
+        data = np.zeros( (len(fas),len(ms)) )
+        for (a,m,p) in self.hypotheses:
+            fi = fas.index(a)
+            mi = ms.index(m)
+            data[fi,mi]=p
+            
+        # Heat map
+        fig, ax = plt.subplots()
+        im = ax.imshow(
+            data,aspect='auto',interpolation='none',
+            #origin = 'lower',
+            #extent = [min(ms), max(ms),
+            #          min(fas), max(fas)]
+        )
+        
+        # Add the color bar
+        cbar = ax.figure.colorbar(im, ax = ax)
+        cbar.ax.set_ylabel("Probability", rotation = -90, va = "bottom")
+
+        # Axis labels
+        plt.yticks( range(len(fas)), fas)
+        #plt.xticks( range(len(ms)), ms)
+        plt.xlabel("Hypothesis curve midpoint")
+        plt.ylabel("False alarm rate")
+        
+        plt.show()
 
 
 
