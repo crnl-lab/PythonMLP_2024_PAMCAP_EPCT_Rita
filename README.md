@@ -13,7 +13,7 @@ You first create an MLP object. Suppose you have a stimulus intensity dimension.
 In the call below, we create an MLP object and we specify that we want 200 hypothetical psychometric curves with midpoints between 0 and 200 stimulus intensity. The slope is fixed at 0.1 so it's the same for all hypothetical psychometric curves. Now sometimes participants make little mistakes. They give a different answer than what they intended, or due to an attentional glitch, they miss a stimulus they should have perceived. The rate at which this happens is called the false alarm rate. Here we hypothesize it is any of 0%, 10%, 20%, 30% or 40%.
 
 
-```
+```python
 import pythonmlp
 
 mlp = pythonmlp.MLP(
@@ -36,7 +36,7 @@ mlp = pythonmlp.MLP(
 
 We can see some basic information about the newly created MLP object as follows:
 
-```
+```python
 mlp.print()
 ```
 
@@ -57,7 +57,7 @@ History: 0 answer(s)
 
 Now comes the time to present the first stimulus to your participant. What level to choose? Let's say we present a stimulus at 100 intensity, and the participant responds they have not heard it. We ask MLP to update its estimates based on this response:
 
-```
+```python
 mlp.update(100,False)
 ```
 
@@ -81,7 +81,7 @@ So we see now only one curve is maximally likely, and it's the one with its midp
 
 We can ask MLP what is the next stimulus level to present to participants:
 
-```
+```python
 mlp.next_stimulus()
 ```
 
@@ -89,7 +89,7 @@ It responds: `205.8566365333636`
 
 So that is the next intensity to try. Let's say the participant responds that they perceived that stimulus.
 
-```
+```python
 mlp.update(205.8566365333636,True)
 mlp.print()
 ```
