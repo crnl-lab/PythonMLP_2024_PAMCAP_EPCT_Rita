@@ -13,8 +13,9 @@ import pygame
 import random
 import sys
 from ehrlesamson    import * 
-from mlpcore.mlp    import MLP
+import pythonmlp
 import time
+import pandas as pd
 
 
 displaySize = (1024,600) # for widescreen
@@ -32,6 +33,31 @@ screen = None
 
 CONTINUE_KEY  = [ pygame.K_SPACE ]
 RESPONSE_KEYS = [ pygame.K_r, pygame.K_i ]
+
+
+
+
+
+
+
+# The (fixed) slope of our psychometric curves
+SLOPE_HYP = .1
+
+# The minimum and maximum of the hypothesised thresholds
+MINHYP = 0
+MAXHYP = 200
+
+# The number of hypotheses
+NHYPOTHESES = 200
+
+# Our false alarm rates (these will be crossed with the threshold hypotheses)
+FALSE_ALARM_RATES = [0.,.1,.2,.3,.4]
+
+# The initial stimulus level
+INITIAL_STIM = MAXHYP
+MAX_STIM = MAXHYP
+
+
 
 
 def init():
@@ -139,15 +165,15 @@ def runtest(task,trials):
     # Run one block of the MLP with the given task.
     # Here, task contains all the necessary configuration
     # parameters.
-    print "MLP Test run"
+    print ("MLP Test run")
     #participant = raw_input("Participant name: ")
 
     # Initialise file output
     #fileoutput = FileOutput( participant, task )
 
     # The initial stimulus "guess"
-    stims = [ ("max",task.INITIAL_STIM),
-              ("min",task.MINHYP) ]
+    stims = [ ("max",INITIAL_STIM),
+              ("min",MINHYP) ]
 
     # Randomise the trials
     random.shuffle(trials)
@@ -199,7 +225,7 @@ def runtest(task,trials):
 
     # That's all folks!
     # fileoutput.closefiles(likelihoodest)
-    task.rideau() # Do some final things
+    #task.rideau() # Do some final things
 
     return
 
@@ -233,63 +259,115 @@ def evaluateGUI(stim):
 
 
 
-def runblock(task,block):
+def runblock(block,participant):
 
+    task = EhrleSamson()
+    
     if block=="try":
         # A short try-out block that contains only 4 trials,
         # two at the smallest stimulus, two at the biggest one.
         # We also give feedback.
         runtest(task,["min","max","min","max"])
+        return
 
 
-
+        
     if block=="train":
         # A short try-out block that contains 10 trials, but
         # follows the MLP procedure (i.e. dynamic selection
         # of the stimuli). We don't give feedback.
 
         # Make sure that we have only 10 trials in total
-        task.NTRIALS_A        = 4
-        task.N_CATCH_TRIALS_A = 1
-        task.NTRIALS_B        = 4
-        task.N_CATCH_TRIALS_B = 1
-
-        # Then start the MLP
-        mlp = MLP()
-        mlp.run( task, 
-                 participant="%s-anisochrony-%s"%(participant,
-                                                  block),
-                 evaluate=evaluateGUI,
-                 preKeypress=False,
-                 )
-
+        NTRIALS        = 8
+        N_CATCH_TRIALS = 2
+        
 
 
     if block in ["1","2","3"]:
         # The "real" experimental blocks
 
-        # Then start the MLP
-        mlp = MLP()
-        mlp.run( task,
-                 participant="%s-anisochrony-%s"%(participant,
-                                                  block),
-                 evaluate=evaluateGUI,
-                 preKeypress=False,
-                 )
+        NTRIALS        = 30
+        N_CATCH_TRIALS = 6
 
 
 
 
+    mlp = pythonmlp.MLP(
+    
+        # The slope of our psychometric curves
+        slope = SLOPE_HYP, # this is a cheat, we give the real psychometric curve slope...
+        
+        # The minimum and maximum of the hypothesised thresholds
+        hyp_min = MINHYP,
+        hyp_max = MAXHYP,
+        
+        # The number of hypotheses
+        hyp_n = NHYPOTHESES,
+        
+        # Our false alarm rates (these will be crossed with the threshold hypotheses)
+        fa = FALSE_ALARM_RATES,
+    )
+    
+        
+    # Initialise a list that includes the "catch" trials,
+    # so we plan in advance that we have the right number of catch trials.
+    trials = [ "mlp" for _ in range(NTRIALS-1) ] + [ "catch" for _ in range(N_CATCH_TRIALS) ]
+    random.shuffle(trials)
+    
+    # The trials we want to do
+    todo = ["mlp"] + trials #+ trialsB # this is done so that the first trial is never a catch
+    
+    # Now let's run those trials
+    
+    stim = INITIAL_STIM # start at the maximum level
+    
+    trials = []
+    for trial,info in enumerate(todo):
+            
+        stim = stim if stim>0 else 0 # set to 0 if lower
+        stim = 0 if info=='catch' else stim
+        
+        textScreen(screen,mainfont,u"Écoutez...")
+        pygame.display.flip()
+
+        task.playstim(stim)
+
+        textScreen(screen,mainfont,u"Est-ce que les sons étaient régulier (appuyer sur R) ou irrégulier (appuyer sur I)?")
+        pygame.display.flip()
+        (t,key)=waitforkey(RESPONSE_KEYS)
+        # Get the response for this stimulus
+        ans = (key==2) # answer is True when response is irregular (change heard)
+
+        
+        mlp.update(stim,ans)
+        trials.append({
+            "trial":trial+1,
+            "kind":info,
+            "stimulus":stim,
+            "response":ans
+            })
+        stim = mlp.next_stimulus()
+
+    from datetime import datetime
+    current_time = datetime.now()
+    formatted_time = current_time.strftime('%Y%m%d-%H%M%S')
+    fname = "{}-anisochrony-{}.csv".format(participant,formatted_time)
+    trials = pd.DataFrame(trials)
+    trials['task']='anisochrony'
+    trials.to_csv(fname,index=False)
 
 
 
-def instruct(task):
+
+def instruct():
     """Give the instructions for this task"""
+
+    task = EhrleSamson()
 
     keepGoing=True
     while keepGoing:
-        mx = task.INITIAL_STIM
-        mn = task.MINHYP
+        mx = INITIAL_STIM
+        mn = MINHYP
 
         instruct=u"Vous allez entendre cinq sons presenté dans un rhythme régulier.\nAppuyez sur espace pour écouter un exemple."
         textScreen(screen,mainfont,instruct)
@@ -327,7 +405,7 @@ def instruct(task):
 def showInstructions(block):
     """Show the instructions for a particular block"""
 
-    print "Showing instructions"
+    print ("Showing instructions")
 
     if block in ["train"]:
         instruct = u"Maintenant on va continuer avec un nouveau bloc.\nJe ne vais plus vous dire si votre réponse était correct ou pas.\nDu coup, les différences vont être plus petites maintenant.\nDonc écoutez bien!\n\nAppuyez sur espace quand vous êtes prêt(e)."
@@ -349,21 +427,17 @@ def showInstructions(block):
 
 participant=""
 while not len(participant)>0:
-    participant = raw_input("Participant: ")
+    participant = input("Participant: ")
 
 screen = init()
 
-task=EhrleSamson()
-instruct(task)
+instruct()
 
 blocks = ["try","train","1","2","3"]
 for block in blocks:
 
     showInstructions(block)
-
-    task=EhrleSamson() # Generate a new instance, so that we have the right number of trials
-    runblock(task,block)
-    
+    runblock(block,participant)
 
 ending()
 

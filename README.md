@@ -6,6 +6,10 @@ A python implementation of the Maximum Likelihood Procedure to establish psychop
 
 ## Usage
 
+Check out the `tests/` directory for an illustration of this package.
+Running `tests/anisochrony-gui.py` (which requires `pygame`) will run an example experiment (sorry the instructions to the participants are in French).
+Also look at `Simulate_MLP_Procedure.ipynb` for an example how you can simulate the procedure to study its behaviour.
+
 This allows you to run the MLP procedure. It's like a psychophysical staircase except that it estimates the participants' psychometric curve online and uses that estimate to choose which stimulus to present.
 
 You first create an MLP object. Suppose you have a stimulus intensity dimension. This could be the intensity of a light shown, or the loudness of a sound, or the contrast of a visual grating. Let's call that dimension x. Now we hypothesize that for low intensities, participants will not preceive it. For high intensities, they will. So their responses (detect or not) can be described by a psychometric curve. MLP will try to estimate this psychometric curve. It does so by entertaining a series of candidate (hypothetical) psychometric curve and seeing which one fits the data best.
@@ -114,8 +118,6 @@ As you can see, MLP now thinks the participant's threshold is roughly halfway be
 
 And then you can keep going like this. That's all there is to it!
 
-
-Check out the `tests/` directory for an illustration of this package.
 
 
 
