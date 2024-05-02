@@ -67,8 +67,8 @@ class EhrleSamson:
     SAMPLEFREQ     = 44100
     NCHANNELS      = 1
 
-    # Generate the C6 tone
-    C6FREQ         = 1047 # Hz
+    # Generate the A4 tone
+    A4FREQ         = 440 # Hz
     DURATION       = int(.1*  SAMPLEFREQ) # in samples
     FADE_LENGTH    = int(.025*SAMPLEFREQ) # in n. of samples
     SILENCE_LENGTH = int(.25* SAMPLEFREQ) # in samples (since the tone is 100ms long, we make the silence 250ms so the ITI is 350ms)
@@ -78,8 +78,8 @@ class EhrleSamson:
 
     def __init__(self):
 
-        # Generating a sine tone of 100ms long, C6
-        self.tone = sine_wave(self.C6FREQ,
+        # Generating a sine tone of 100ms long, A4
+        self.tone = sine_wave(self.A4FREQ,
                               self.SAMPLEFREQ,
                               self.MAX_AMPLITUDE,
                               self.DURATION)

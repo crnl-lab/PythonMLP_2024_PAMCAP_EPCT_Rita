@@ -286,8 +286,8 @@ def runblock(block,participant):
     if block in ["1","2","3"]:
         # The "real" experimental blocks
 
-        NTRIALS        = 30
-        N_CATCH_TRIALS = 6
+        NTRIALS        = 20
+        N_CATCH_TRIALS = 4
 
 
 
