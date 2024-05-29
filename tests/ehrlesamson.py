@@ -14,7 +14,7 @@ import platform
 import scipy.io.wavfile
 import numpy as np
 # Platform-specific imports
-if platform.system()=="Linux":
+if platform.system() in ["Linux", "Windows"]:
     import pygame
 
 def sine_wave(frequency, framerate, amplitude, length):
@@ -70,7 +70,7 @@ class EhrleSamson:
         # Put them in line, these are the first three tones
         self.preface = np.concatenate([self.tone,self.silence]*3)
 
-        if platform.system()=="Linux":
+        if platform.system() in ["Linux", "Windows"]:
             # Initialise pygame for playing audio
             pygame.init()
 
@@ -130,13 +130,14 @@ class EhrleSamson:
         fname = '.stim.wav'
         
         # Play it using an external player
-        if platform.system()=="Linux":
+        if platform.system() in ["Linux", "Windows"]:
 
             self.make_hyde_peretz_wav(stim,fname)
             
             pygame.mixer.music.load(fname)
             pygame.mixer.music.play()
             pygame.time.wait(2000)
+            pygame.mixer.music.unload()
 
         elif os.name=="posix": # That means we are in Mac OS
 

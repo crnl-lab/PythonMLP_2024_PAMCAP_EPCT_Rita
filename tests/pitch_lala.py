@@ -10,6 +10,8 @@ Here we present the MLPy through a graphical user interface
 
 import random
 import sys
+import os
+import platform
 from pathlib import Path
 import time
 from datetime import datetime
@@ -19,6 +21,8 @@ import pygame
 from pitchtask import PitchTask
 import pythonmlp
 
+if platform.system() == "Windows":
+    os.environ['SDL_VIDEODRIVER'] = 'windows'
 
 DISPLAY_SIZE = (1024,600) # for widescreen
 # The background of the screen
