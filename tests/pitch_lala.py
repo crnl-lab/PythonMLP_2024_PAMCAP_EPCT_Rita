@@ -16,7 +16,7 @@ from datetime import datetime
 import pandas as pd
 
 import pygame
-from ehrlesamson import EhrleSamson
+from pitchtask import PitchTask
 import pythonmlp
 
 
@@ -43,7 +43,7 @@ REPLAY_KEY = [ pygame.K_SPACE ]
 PATH_DATA = './data'
 
 # Where to read story.xlsx icons and png files
-PATH_STORY = "./stories/Bunny"
+PATH_STORY = "./stories/Lala"
 
 # Prompt for participant code if empty
 PARTICIPANT = ""
@@ -52,14 +52,14 @@ PARTICIPANT = ""
 START_BLOCK = -1
 
 # The (fixed) slope of our psychometric curves
-SLOPE_HYP = .1
+SLOPE_HYP = 1.
 
 # The minimum and maximum of the hypothesised thresholds
 MINHYP = 0
-MAXHYP = 200
+MAXHYP = 300
 
 # The number of hypotheses
-NHYPOTHESES = 201
+NHYPOTHESES = 301
 
 # Our false alarm rates (these will be crossed with the threshold hypotheses)
 FALSE_ALARM_RATES = [0.,.1,.2,.3,.4]
@@ -99,6 +99,7 @@ def init():
     random.seed()
 
     return (scr, fnt)
+
 
 def ending():
     """ Quit pygame. """
@@ -238,7 +239,7 @@ def runtest(task,trials):
 
     return
 
-def evaluate_stim(stim, txt="evaluate_stim", task = EhrleSamson()):
+def evaluate_stim(stim, txt="evaluate_stim", task = PitchTask()):
     """ 
     This is a custom function to evaluate a stimulus level,
     and it is fed into the MLP procedure. We are given a stimulus
@@ -297,7 +298,7 @@ def runblock(block, participant):
         participant code to include in csv name
     """
 
-    task = EhrleSamson()
+    task = PitchTask()
 
     if block=="try":
         # A short try-out block that contains only 4 trials,
@@ -376,9 +377,9 @@ def runblock(block, participant):
         stim = mlp.next_stimulus()
 
     current_time = datetime.now()
-    fname = f"{participant}-anisochrony-{current_time:%Y%m%d-%H%M%S}.csv"
+    fname = f"{participant}-pitchtask-{current_time:%Y%m%d-%H%M%S}.csv"
     trials = pd.DataFrame(trials)
-    trials['task']='anisochrony'
+    trials['task']='pitchtask'
     trials.to_csv(PATH_DATA + '/' + fname,index=False)
 
     # Block feedback for experimenter
@@ -410,7 +411,7 @@ def add_img(screen,png, infotxt, end = "\n"):
 def instruct():
     """Give the instructions for this task"""
 
-    task = EhrleSamson()
+    task = PitchTask()
     instructfont = pygame.font.SysFont("arial",60)
 
     keep_going=True
@@ -497,7 +498,7 @@ while not len(PARTICIPANT)>0:
 # Recover from previous run
 if START_BLOCK == -1:
     D = Path(PATH_DATA)
-    for csv in D.glob(f"{PARTICIPANT}-anisochrony-{datetime.now():%Y%m%d}*.csv"):
+    for csv in D.glob(f"{PARTICIPANT}-pitchtask-{datetime.now():%Y%m%d}*.csv"):
         START_BLOCK = START_BLOCK + 1
     if START_BLOCK > -1:
         # no data saved for "try" block

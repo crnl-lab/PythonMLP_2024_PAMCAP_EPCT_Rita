@@ -1,10 +1,7 @@
 """
 
 Here, we try to make a tone series as in Hyde & Peretz (2004 Psych Sci)
-but it has five notes of which only one is displaced. That means, when we displace
-one note, two intervals change: the one before the note becomes longer,
-the one after the note becomes shorter.
-This is what Ehrle & Samson (2005) did too.
+but it has five notes of which only the fourth has a higher pitch.
 
 """
 
@@ -25,11 +22,11 @@ def sine_wave(frequency, framerate, amplitude, length):
     signal = amplitude*np.sin(2*np.pi*frequency*t)
     return signal
 
-class EhrleSamson:
-    """ Anisochrony Detection Task """
+class PitchTask:
+    """ Pitch Change Detection Task """
 
     # The name of this task
-    NAME = "Anisochrony Detection"
+    NAME = "Pitch Change Detection"
 
     # Properties of the audio
     SAMPLEWIDTH    = 2
@@ -74,39 +71,40 @@ class EhrleSamson:
             # Initialise pygame for playing audio
             pygame.init()
 
-
-
-
-
-
-
-    def generate_hyde_peretz( self, dev ):
+    def generate_hyde_peretz( self, freq_dev ):
         """ Generate the Hyde-Peretz (2004 Psych Sci) four-tone sequence,
-        where the fourth is displaced, possibly, by an amount of dev (in msec).
+        where the fourth is shifted in pitc by an amount of dev (in cents).
         Dev needs to be bigger than zero. """
 
-        if dev<0: 
-            #print "Warning! Cannot generate the Hyde&Peretz for dev<0 (dev=%f)"%dev
-            dev = 0.
+        freq_dev = max(freq_dev, 0.)
 
-        # The extra silence
-        extrasilentframes = int(self.SAMPLEFREQ*dev/1000.)
-        devsilence   = [ 0 for _ in range(extrasilentframes) ] # the silence that becomes longer
-        shortsilence = [ 0 for _ in range(self.SILENCE_LENGTH-extrasilentframes) ] # the silence that becomes shorter
+        # The new frequency
+        newfreq = 2**(float(freq_dev)/1200)*self.A4FREQ
+        # Generating a sine tone of 100ms long, A4
+        dev_tone = sine_wave(newfreq,
+                             self.SAMPLEFREQ,
+                             self.MAX_AMPLITUDE,
+                             self.DURATION)
 
+        # Now we generate a "fade-in" and "fade-out", just linear to keep it simple
+        for i in range(self.FADE_LENGTH):
+            dev_tone[i] =  dev_tone[i]*i/self.FADE_LENGTH
+        for i in range(self.FADE_LENGTH):
+            dev_tone[-i] = dev_tone[-i]*i/self.FADE_LENGTH
+  
         # And then perhaps some alteration
-        values = np.concatenate([self.preface,devsilence,self.tone,shortsilence,self.tone])
+        values = np.concatenate([self.preface,dev_tone,self.silence,self.tone])
 
         return values
 
 
 
-    def make_hyde_peretz_wav( self, dev, filename ):
+    def make_hyde_peretz_wav( self, freq_dev, filename ):
         """ Generate the Hyde-Peretz stimulus at deviation dev,
         and write it to the given filename. """
 
         # First, generate the tone sequence
-        values = self.generate_hyde_peretz(dev)
+        values = self.generate_hyde_peretz(freq_dev)
 
         # Writing a simple wave file
         scipy.io.wavfile.write(filename, self.SAMPLEFREQ, values)
@@ -136,7 +134,7 @@ class EhrleSamson:
             
             pygame.mixer.music.load(fname)
             pygame.mixer.music.play()
-            pygame.time.wait(2000)
+            pygame.time.wait(1750)
 
         elif os.name=="posix": # That means we are in Mac OS
 
