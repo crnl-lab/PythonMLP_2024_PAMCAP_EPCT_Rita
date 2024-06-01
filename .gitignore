@@ -1,3 +1,7 @@
 *.pyc
 *~
 data/*.csv
+.DS_Store
+.stim.wav
+.vscode/
+build
