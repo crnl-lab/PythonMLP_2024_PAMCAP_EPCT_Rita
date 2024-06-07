@@ -6,10 +6,11 @@ Furthermore, we'll be adding catch trials to counteract
 bias in estimating false alarm rate (e.g. Leek et al (2000 JASA)).
 
 """
-#
-import numpy as np
-import random
 
+import random
+import numpy as np
+import matplotlib.pyplot as plt
+from matplotlib import cm
 
 
 
@@ -33,7 +34,7 @@ def pyes( x, a, m, k ):
 # For example, the target P can be computed, given that we assume no attentional
 # lapses (Green 1993 JASA, eq. 6)
 def optimalp( a ):
-    # Return the sweetpoint p for a given false alarm rate
+    """ Return the sweetpoint p for a given false alarm rate """
     return (2*a+1+np.sqrt(1+8*a))/(3+np.sqrt(1+8*a))
 
 
@@ -51,6 +52,7 @@ class MLP:
 
 
     def print(self):
+        """ Print MLP object. """
 
         print("--- MLP object ---")
         print("Psychometric curve slope : {}".format(self.slope))
@@ -63,17 +65,18 @@ class MLP:
         if len(self.history):
             prop_yes = np.mean([ x['response'] for x in self.history])
             print("     prop. yes response = {:.3f}".format(prop_yes))
-        
+            print("     last 10 stim slope = {:.1f}".format(self.stim_slope(10)))
+
         opts = self.get_max_like()
         a_s, m_s, _ = zip(*opts)
         print("# Maximum likelihood curves: {}".format(len(opts)))
         print("    Midpoints {:.3f} - {:.3f}, FA rates {} - {}".format(min(m_s),max(m_s),min(a_s),max(a_s)))
         print("    Midpoint estimate : {:.3f}".format(self.get_midpoint_estimate()))
         print("")
-              
-        
-        
-    
+
+
+
+
 
     def __init__(
             self,
@@ -125,9 +128,11 @@ class MLP:
 
 
     def calculate_target(self):
-        # Determine the tracking target, which is a target probability (p)
-        # on the psychometric curve for which we'll later try to find the corresponding
-        # stimulus level.
+        """
+        Determine the tracking target, which is a target probability (p)
+        on the psychometric curve for which we'll later try to find the corresponding
+        stimulus level.
+        """
 
         # We calculate the optimal tracking p values for the different false alarm rates
         P_YES = [ optimalp(fa) for fa in self.fa ]
@@ -141,12 +146,14 @@ class MLP:
         
 
     def update( self, x, answer ):
-        # Given a subject's answer (yes=True or no=False) to stimulus intensity x,
-        # update the likelihood of the hypotheses.
-        # That is, for each hypotheses, calculate the probability p of
-        # that observation assuming that hypothesis.
-        # Then, we multiply the likelihood of that hypothesis with p.
-        # We return the new list of hypotheses.
+        """
+        Given a subject's answer (yes=True or no=False) to stimulus intensity x,
+        update the likelihood of the hypotheses.
+        That is, for each hypotheses, calculate the probability p of
+        that observation assuming that hypothesis.
+        Then, we multiply the likelihood of that hypothesis with p.
+        We return the new list of hypotheses.
+        """
 
         self.history.append({"stimulus":x,"response":answer})
         
@@ -171,6 +178,7 @@ class MLP:
 
 
     def get_max_like(self):
+        """ Return hypotheses with maximum likelihood. """
 
         # If there are several (due to being practically equal), just choose a random one
         # among them
@@ -260,12 +268,9 @@ class MLP:
 
 
     def plot(self):
+        """ Plot hypotheses with maximum likelihood enhanced and history of answers. """
 
         maxp = max([ p for _,_,p in self.hypotheses ])
-
-        import matplotlib.pyplot as plt
-        import matplotlib.colors as colors
-        import matplotlib.cm as cm
 
         stims = np.linspace(self.hyp_min,self.hyp_max,300)
         plot_thickness = 3.5
@@ -311,8 +316,9 @@ class MLP:
 
 
     def plot_hypotheses(self):
+        """ Plot hypotheses """
 
-        maxp = max([ p for _,_,p in self.hypotheses ])
+        # maxp = max([ p for _,_,p in self.hypotheses ])
 
         fas = list(set([ a for (a,_,_) in self.hypotheses ]))
         ms  = list(set([ m for (_,m,_) in self.hypotheses ]))
@@ -321,8 +327,6 @@ class MLP:
         
         print("Hello!")
 
-        import numpy as np
-        import matplotlib.pyplot as plt
         
         data = np.zeros( (len(fas),len(ms)) )
         for (a,m,p) in self.hypotheses:
@@ -331,7 +335,7 @@ class MLP:
             data[fi,mi]=p
             
         # Heat map
-        fig, ax = plt.subplots()
+        _, ax = plt.subplots()
         im = ax.imshow(
             data,aspect='auto',interpolation='none',
             #origin = 'lower',
@@ -348,9 +352,17 @@ class MLP:
         #plt.xticks( range(len(ms)), ms)
         plt.xlabel("Hypothesis curve midpoint")
         plt.ylabel("False alarm rate")
-        
+       
         plt.show()
 
-
-
-
+    def stim_slope(self, ntail=10):
+        """ Give the slope for last ntail simuli in history. """
+        fit = [self.hyp_min - self.hyp_max, 0]
+        # remove catch trials
+        stim = [h['stimulus'] for h in self.history if h['stimulus'] > self.hyp_min]
+        # do a linear regression and return slope if we have enough data
+        if len(self.history)>1:
+            x = list(range(len(stim[-ntail:])))
+            y = stim[-ntail:]
+            fit = np.polyfit(x=x, y=y, deg=1)
+        return fit[0]
