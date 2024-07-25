@@ -460,6 +460,57 @@ def show_instructions(block):
         pygame.display.flip()
         waitforkey(CONTINUE_KEY)
 
+
+###################################################################################################
+# Some methods do deal with current participant name over protocoles and update experiement state #
+###################################################################################################
+
+def update_participant_proto_state(proto_participant_file, MLP_starting_time=None, MLP_i_trial=None, MLP_i_block=None, MLP_nb_run=None):
+    #if the file exists, get the content
+    if os.path.isfile(proto_participant_file):
+        with open(proto_participant_file,"r",encoding="utf8") as file:
+            textdic = file.read()    
+        currentDico = eval(textdic)
+        print(currentDico)
+
+        #update parameters if necessary
+        if MLP_starting_time != None:
+            currentDico['MLP_starting_time'] = MLP_starting_time
+            currentDico['MLP_nb_run']+=1
+        if MLP_i_trial != None:
+            currentDico['MLP_i_trial'] = MLP_i_trial
+        if MLP_i_block != None:
+            currentDico['MLP_i_block'] = MLP_i_block  
+        if MLP_nb_run != None:
+            currentDico['MLP_nb_run'] = MLP_nb_run  
+    else:
+        currentDico = { "MLP_starting_time" : dt_string,
+                        "MLP_i_trial" : 0,
+                        "MLP_i_block" : 0,
+                        "MLP_nb_run" : 1
+                    }
+    
+    #write or rewrite the dict
+    with open(proto_participant_file,"w",encoding="utf8") as file:
+        file.write(f"{currentDico}") 
+    
+def input_with_default(prompt, default):
+    return input(f"{prompt} [{default}]: ").strip() or default
+
+def get_last_participant(current_participant_file):
+    file = open(current_participant_file, "r")
+    last_participant = file.read()
+    file.close()
+    return last_participant
+
+def set_last_participant(current_participant_file, participant):
+    file = open(current_participant_file, 'w') #erase the actual content
+    file.close()
+    file = open(current_participant_file, 'w')
+    file.write(participant)
+    file.close()
+
+
 ###################################################################################################
 #             Adjust global variables with command line parameters and run experiment             #
 ###################################################################################################
@@ -496,8 +547,25 @@ while len(sys.argv) > 2:
         raise ValueError('Unknown option : ' + c)
 
 STORY = pd.read_excel(PATH_STORY + '/story.xlsx')
-while not len(PARTICIPANT)>0:
-    PARTICIPANT = input("Participant: ")
+
+
+# For multi-protocol gestion: propose the last current participant name 
+# and update Participant.protocol state among the experiment
+path_gestion_meta_proto = './../Gestion_Meta_Protocoles/'
+current_participant_file = path_gestion_meta_proto + 'current_participant.txt'
+last_participant = get_last_participant(current_participant_file)
+
+participant=""
+while not len(participant)>0:
+    participant = input_with_default("Participant: ", last_participant)
+
+print("Participant: " + participant)
+set_last_participant(current_participant_file, participant)
+
+proto_participant_file = path_gestion_meta_proto + 'Rita_Working_Dir/' + participant + '_MLP_pitch.txt'
+dt_string =  datetime.now().strftime("%d/%m/%Y %H:%M:%S")
+update_participant_proto_state(proto_participant_file, MLP_starting_time=dt_string)
+
 
 # Recover from previous run
 if START_BLOCK == -1:
