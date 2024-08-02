@@ -24,6 +24,9 @@ import pythonmlp
 if platform.system() == "Windows":
     os.environ['SDL_VIDEODRIVER'] = 'windows'
 
+PATH_GESTION_META_PROTO = './../Gestion_Meta_Protocoles/'
+ALL_BLOCKS = ["try","train","1"]
+
 DISPLAY_SIZE = (1024,600) # for widescreen
 # The background of the screen
 BGCOLOR = (255,255,255)
@@ -32,7 +35,6 @@ FGCOLOR = (91,155,213)
 # Pygame configuration constants
 DISPLAY_FLAGS = pygame.FULLSCREEN
 DISPLAYNUM = 1
-
 
 
 MAINFONT = None
@@ -103,7 +105,6 @@ def init():
     random.seed()
 
     return (scr, fnt)
-
 
 def ending():
     """ Quit pygame. """
@@ -379,6 +380,7 @@ def runblock(block, participant):
             "count": count
             })
         stim = mlp.next_stimulus()
+        update_participant_proto_state(PROTO_PARTICIPANT_FILE, MLP_i_trial=trial)
 
     current_time = datetime.now()
     fname = f"{participant}-pitchtask-{current_time:%Y%m%d-%H%M%S}.csv"
@@ -455,7 +457,7 @@ def show_instructions(block):
         waitforkey(CONTINUE_KEY)
 
     if block in ["1","2","3"]:
-        txt = f"Maintenant on commence le bloc {block} (sur 3).\n\nAppuie sur espace pour continuer."
+        txt = "Maintenant on commence une grande compétition.\n\nAppuie sur espace pour continuer."
         text_screen(SCREEN,MAINFONT,txt, img = STORY.Img[STORY.Type=="Bloc"].iloc[0])
         pygame.display.flip()
         waitforkey(CONTINUE_KEY)
@@ -466,50 +468,75 @@ def show_instructions(block):
 ###################################################################################################
 
 def update_participant_proto_state(proto_participant_file, MLP_starting_time=None, MLP_i_trial=None, MLP_i_block=None, MLP_nb_run=None):
+    """
+    Read or init the partipant file before updating it
+
+    Parameters
+    ----------
+    proto_participant_file: str
+        the filename for storing current state for participant
+    MLP_starting_time: str
+        the date when the experiment was restarted in %d/%m/%Y %H:%M:%S format
+        When set, the number or run is updated (+1) unless MLP_nb_run is also set
+    MLP_i_trial : int
+        the last trial run if we want to update it or None
+    MLP_i_block : int
+        the last bloc run if we want to update it or None
+    MLP_nb_run : int
+        the number of times the experiment was relounched if we want to set it
+    Returns
+    -------
+    currentDico: a python dictionnary coding for updated state with 4 keys:
+        MLP_starting_time,
+        MLP_i_trial,
+        MLP_i_block,
+        MLP_nb_run
+    """
     #if the file exists, get the content
     if os.path.isfile(proto_participant_file):
         with open(proto_participant_file,"r",encoding="utf8") as file:
-            textdic = file.read()    
+            textdic = file.read()
         currentDico = eval(textdic)
-        print(currentDico)
 
         #update parameters if necessary
         if MLP_starting_time != None:
             currentDico['MLP_starting_time'] = MLP_starting_time
             currentDico['MLP_nb_run']+=1
+        if MLP_i_block != None:
+            currentDico['MLP_i_block'] = MLP_i_block
+            currentDico['MLP_i_trial'] = 0
         if MLP_i_trial != None:
             currentDico['MLP_i_trial'] = MLP_i_trial
-        if MLP_i_block != None:
-            currentDico['MLP_i_block'] = MLP_i_block  
         if MLP_nb_run != None:
-            currentDico['MLP_nb_run'] = MLP_nb_run  
+            currentDico['MLP_nb_run'] = MLP_nb_run
     else:
-        currentDico = { "MLP_starting_time" : dt_string,
+    # if the file does not exist, create it from scratch
+        if MLP_starting_time is None:
+            MLP_starting_time = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
+        currentDico = { "MLP_starting_time" : MLP_starting_time,
                         "MLP_i_trial" : 0,
                         "MLP_i_block" : 0,
                         "MLP_nb_run" : 1
                     }
-    
+
     #write or rewrite the dict
-    with open(proto_participant_file,"w",encoding="utf8") as file:
-        file.write(f"{currentDico}") 
-    
+    with open(proto_participant_file,"w", encoding="utf8") as file:
+        file.write(f"{currentDico}")
+
 def input_with_default(prompt, default):
+    """ Prompt for imput with default value. """
     return input(f"{prompt} [{default}]: ").strip() or default
 
 def get_last_participant(current_participant_file):
-    file = open(current_participant_file, "r")
-    last_participant = file.read()
-    file.close()
+    """ Read participant code in participant file. """
+    with open(current_participant_file, "r", encoding="utf-8") as file:
+        last_participant = file.read()
     return last_participant
 
 def set_last_participant(current_participant_file, participant):
-    file = open(current_participant_file, 'w') #erase the actual content
-    file.close()
-    file = open(current_participant_file, 'w')
-    file.write(participant)
-    file.close()
-
+    """ Write participant code in participant file, erasing previous content. """
+    with open(current_participant_file, 'w', encoding="utf-8") as file:
+        file.write(participant)
 
 ###################################################################################################
 #             Adjust global variables with command line parameters and run experiment             #
@@ -549,22 +576,20 @@ while len(sys.argv) > 2:
 STORY = pd.read_excel(PATH_STORY + '/story.xlsx')
 
 
-# For multi-protocol gestion: propose the last current participant name 
+# For multi-protocol gestion: propose the last current participant name
 # and update Participant.protocol state among the experiment
-path_gestion_meta_proto = './../Gestion_Meta_Protocoles/'
-current_participant_file = path_gestion_meta_proto + 'current_participant.txt'
-last_participant = get_last_participant(current_participant_file)
+CURRENT_PARTICIPANT_FILE = PATH_GESTION_META_PROTO + 'current_participant.txt'
+LAST_PARTICIPANT = get_last_participant(CURRENT_PARTICIPANT_FILE)
 
-participant=""
-while not len(participant)>0:
-    participant = input_with_default("Participant: ", last_participant)
+PARTICIPANT=""
+while len(PARTICIPANT) == 0:
+    PARTICIPANT = input_with_default("Participant: ", LAST_PARTICIPANT)
 
-print("Participant: " + participant)
-set_last_participant(current_participant_file, participant)
+print("Participant: " + PARTICIPANT)
+set_last_participant(CURRENT_PARTICIPANT_FILE, PARTICIPANT)
 
-proto_participant_file = path_gestion_meta_proto + 'Rita_Working_Dir/' + participant + '_MLP_pitch.txt'
-dt_string =  datetime.now().strftime("%d/%m/%Y %H:%M:%S")
-update_participant_proto_state(proto_participant_file, MLP_starting_time=dt_string)
+PROTO_PARTICIPANT_FILE = PATH_GESTION_META_PROTO + 'Rita_Working_Dir/' + PARTICIPANT + '_MLP_pitch.txt'
+update_participant_proto_state(PROTO_PARTICIPANT_FILE, datetime.now().strftime("%d/%m/%Y %H:%M:%S"))
 
 
 # Recover from previous run
@@ -575,16 +600,17 @@ if START_BLOCK == -1:
     if START_BLOCK > -1:
         # no data saved for "try" block
         START_BLOCK = START_BLOCK + 1
-    START_BLOCK = min(START_BLOCK, 3)
+    START_BLOCK = min(START_BLOCK, 1)
 
 SCREEN, MAINFONT = init()
 
 if START_BLOCK==-1:
     instruct()
 
-blocks = ["try","train","1","2","3"][(START_BLOCK+1):]
+blocks = ALL_BLOCKS[(START_BLOCK+1):]
 for b in blocks:
     show_instructions(b)
+    update_participant_proto_state(PROTO_PARTICIPANT_FILE, MLP_i_block=ALL_BLOCKS.index(b))
     runblock(b, PARTICIPANT)
 
 ending()
