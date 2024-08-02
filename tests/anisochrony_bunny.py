@@ -100,6 +100,8 @@ def init():
     pygame.display.set_caption('MLP Experiment')
     pygame.mouse.set_visible(False)
     scr.fill(BGCOLOR)
+    # Take full control of the mouse and keyboard
+    pygame.event.set_grab(True)
 
     # Initialise the random numbers
     random.seed()
