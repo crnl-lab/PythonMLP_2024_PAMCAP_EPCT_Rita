@@ -295,6 +295,8 @@ def evaluate_stim(stim, txt="evaluate_stim", task = PitchTask()):
         pygame.display.flip()
         _, key = waitforkey(RESPONSE_KEYS + REPLAY_KEY)
         replay = key == 3
+        if replay:
+            logger.warning('\n!!!!!!! Stimulus rejoué !!!!!!!\n')
 
     # Get the response for this stimulus
     ans = key==2 # answer is True when response is irregular (change heard)
