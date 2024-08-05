@@ -15,6 +15,7 @@ import platform
 from pathlib import Path
 import time
 from datetime import datetime
+import logging
 import pandas as pd
 
 import pygame
@@ -24,7 +25,16 @@ import pythonmlp
 if platform.system() == "Windows":
     os.environ['SDL_VIDEODRIVER'] = 'windows'
 
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.DEBUG)
+# log level for printing
+ch = logging.StreamHandler(sys.stdout)
+ch.setLevel(logging.INFO)
+logger.addHandler(ch)
+
 PATH_GESTION_META_PROTO = './../Gestion_Meta_Protocoles/'
+PATH_GESTION_META_PROTO_WD = PATH_GESTION_META_PROTO + 'Rita_Working_Dir/'
+
 ALL_BLOCKS = ["try","train","1"]
 
 DISPLAY_SIZE = (1024,600) # for widescreen
@@ -112,6 +122,7 @@ def ending():
     """ Quit pygame. """
     # To stop the program
     pygame.quit()
+    logging.shutdown()
 
 def waitforkey( keys ):
     """
@@ -219,7 +230,7 @@ def runtest(task,trials):
     trials: list of str 
         str should be in ("min" or "max")
     """
-    print ("MLP Test run")
+    logger.info ("MLP Test run")
 
     # The initial stimulus "guess"
     stims = [ ("max",INITIAL_STIM),
@@ -369,9 +380,9 @@ def runblock(block, participant):
 
         # Alerts for errors on catch trials and max
         if ans & ((info == "catch") | (stim==0)):
-            print('\n!!!!!!! Erreur sur un catch trial !!!!!!!\n')
+            logger.warning('\n!!!!!!! Erreur sur un catch trial !!!!!!!\n')
         if (not ans) & (stim >= MAXHYP):
-            print('\n!!!!!!! Erreur sur un niveau MAX  !!!!!!!\n')
+            logger.warning('\n!!!!!!! Erreur sur un niveau MAX  !!!!!!!\n')
 
         mlp.update(stim,ans)
         trials.append({
@@ -391,9 +402,9 @@ def runblock(block, participant):
     trials.to_csv(PATH_DATA + '/' + fname,index=False)
 
     # Block feedback for experimenter
-    print('\n')
-    mlp.print()
-    print(f'--> {fname}' + '\n')
+    logger.info('\n')
+    logger.info(mlp.to_string())
+    logger.info('--> %s\n', fname)
 
 def add_img(screen,png, infotxt, end = "\n"):
     """
@@ -415,6 +426,7 @@ def add_img(screen,png, infotxt, end = "\n"):
     r = img.get_rect()
     screen.blit(img,((DISPLAY_SIZE[0] - r.width)/2,(DISPLAY_SIZE[1] - r.height)/2))
     print(infotxt, end = end, flush = True)
+    logger.debug(infotxt)
 
 def instruct():
     """Give the instructions for this task"""
@@ -430,6 +442,7 @@ def instruct():
                 text_screen(SCREEN,instructfont,instruct_line.Text[i],
                            fontcolor = (91,155,213),
                            linespacing=70)
+                logger.info(instruct_line.Text[i])
             else:
                 add_img(SCREEN,instruct_line.Img[i],instruct_line.Text[i])
             pygame.display.flip()
@@ -450,7 +463,7 @@ def instruct():
 def show_instructions(block):
     """Show the instructions for a particular block"""
 
-    print ("Showing instructions")
+    logger.info ("Showing instructions")
 
     if block in ["train"]:
         txt = "Maintenant c'est vraiment toi le juge, donc écoute bien!\nAppuie sur entrée pour continuer."
@@ -587,10 +600,15 @@ PARTICIPANT=""
 while len(PARTICIPANT) == 0:
     PARTICIPANT = input_with_default("Participant: ", LAST_PARTICIPANT)
 
-print("Participant: " + PARTICIPANT)
+# Create log file for participant
+fh = logging.FileHandler(f"{PATH_DATA}/{PARTICIPANT}-anisochrony-{datetime.now():%Y%m%d-%H%M%S}.log")
+fh.setLevel(logging.DEBUG) # or any level you want
+fh.setFormatter(logging.Formatter("%(asctime)s - %(message)s"))
+logger.addHandler(fh)
+logger.info("Participant: %s", PARTICIPANT)
 set_last_participant(CURRENT_PARTICIPANT_FILE, PARTICIPANT)
 
-PROTO_PARTICIPANT_FILE = PATH_GESTION_META_PROTO + 'Rita_Working_Dir/' + PARTICIPANT + '_MLP_aniso.txt'
+PROTO_PARTICIPANT_FILE = PATH_GESTION_META_PROTO_WD + PARTICIPANT + '_MLP_aniso.txt'
 update_participant_proto_state(PROTO_PARTICIPANT_FILE, datetime.now().strftime("%d/%m/%Y %H:%M:%S"))
 
 

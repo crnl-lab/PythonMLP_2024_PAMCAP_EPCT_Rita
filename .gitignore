@@ -1,6 +1,7 @@
 *.pyc
 *~
 data/*.csv
+data/*.log
 .DS_Store
 .stim.wav
 .vscode/

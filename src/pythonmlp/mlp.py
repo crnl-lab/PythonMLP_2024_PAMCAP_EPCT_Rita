@@ -6,7 +6,6 @@ Furthermore, we'll be adding catch trials to counteract
 bias in estimating false alarm rate (e.g. Leek et al (2000 JASA)).
 
 """
-
 import random
 import numpy as np
 import matplotlib.pyplot as plt
@@ -53,28 +52,32 @@ class MLP:
 
     def print(self):
         """ Print MLP object. """
+        print(self.to_string())
 
-        print("--- MLP object ---")
-        print("Psychometric curve slope : {}".format(self.slope))
-        print("# of hypotheses: {}".format(len(self.hypotheses)))
-        print("     {} midpoints between {:.3f} and {:.3f}".format(self.hyp_n,self.hyp_min,self.hyp_max))
-        print("     false alarm rates : {}".format(", ".join([ str(f) for f in self.fa])))
-        print("")
 
-        print("History: {} answer(s)".format(len(self.history)))
-        if len(self.history):
+    def to_string(self):
+        """ Log MLP object. """
+
+        out = f"""
+--- MLP object ---"
+Psychometric curve slope : {self.slope}
+# of hypotheses: {len(self.hypotheses)}
+     {self.hyp_n} midpoints between {self.hyp_min:.3f} and {self.hyp_max:.3f}
+     false alarm rates : {', '.join([str(f) for f in self.fa])}
+
+History: {len(self.history)} answer(s)
+"""
+        if len(self.history) > 0:
             prop_yes = np.mean([ x['response'] for x in self.history])
-            print("     prop. yes response = {:.3f}".format(prop_yes))
-            print("     last 10 stim slope = {:.1f}".format(self.stim_slope(10)))
+            out = out + f"     prop. yes response = {prop_yes:.3f}\n"
+            out = out + f"     last 10 stim slope = {self.stim_slope(10):.1f}\n"
 
         opts = self.get_max_like()
         a_s, m_s, _ = zip(*opts)
-        print("# Maximum likelihood curves: {}".format(len(opts)))
-        print("    Midpoints {:.3f} - {:.3f}, FA rates {} - {}".format(min(m_s),max(m_s),min(a_s),max(a_s)))
-        print("    Midpoint estimate : {:.3f}".format(self.get_midpoint_estimate()))
-        print("")
-
-
+        out = out + f"# Maximum likelihood curves: {len(opts)}\n"
+        out = out + f"    Midpoints {min(m_s):.3f} - {max(m_s):.3f}, FA rates {min(a_s)} - {max(a_s)}\n"
+        out = out + f"    Midpoint estimate : {self.get_midpoint_estimate():.3f}\n"
+        return out
 
 
 
