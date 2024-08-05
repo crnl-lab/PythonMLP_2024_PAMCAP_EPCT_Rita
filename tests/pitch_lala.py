@@ -41,7 +41,7 @@ MAINFONT = None
 MAINFONTSIZE = 32
 SCREEN = None
 
-CONTINUE_KEY  = [ pygame.K_SPACE ]
+CONTINUE_KEY  = [ pygame.K_RETURN ]
 RESPONSE_KEYS = [ pygame.K_r, pygame.K_i ]
 REPLAY_KEY = [ pygame.K_SPACE ]
 
@@ -453,13 +453,13 @@ def show_instructions(block):
     print ("Showing instructions")
 
     if block in ["train"]:
-        txt = "Maintenant c'est vraiment toi le juge, donc écoute bien!\nAppuie sur espace pour continuer."
+        txt = "Maintenant c'est vraiment toi le juge, donc écoute bien!\nAppuie sur entrée pour continuer."
         text_screen(SCREEN, MAINFONT, txt, img = STORY.Img[STORY.Type=="Bloc"].iloc[0])
         pygame.display.flip()
         waitforkey(CONTINUE_KEY)
 
     if block in ["1","2","3"]:
-        txt = "Maintenant on commence une grande compétition.\n\nAppuie sur espace pour continuer."
+        txt = "Maintenant on commence une grande compétition.\n\nAppuie sur entrée pour continuer."
         text_screen(SCREEN,MAINFONT,txt, img = STORY.Img[STORY.Type=="Bloc"].iloc[0])
         pygame.display.flip()
         waitforkey(CONTINUE_KEY)
