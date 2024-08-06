@@ -52,7 +52,7 @@ MAINFONTSIZE = 32
 SCREEN = None
 
 CONTINUE_KEY  = [ pygame.K_RETURN ]
-RESPONSE_KEYS = [ pygame.K_r, pygame.K_i ]
+RESPONSE_KEYS = [ pygame.K_s, pygame.K_l ]
 REPLAY_KEY = [ pygame.K_SPACE ]
 
 # Where to save csv files
@@ -461,7 +461,7 @@ def instruct():
             elif instruct_line.Sound[i] == "MAXHYP":
                 task.playstim(MAXHYP)
             if instruct_line.Duration[i]=="Key":
-                _, key = waitforkey(CONTINUE_KEY + [pygame.K_r])
+                _, key = waitforkey(CONTINUE_KEY + REPLAY_KEY)
                 if key == 2:
                     break
             else:
