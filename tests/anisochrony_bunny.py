@@ -110,8 +110,16 @@ def init():
     pygame.display.set_caption('MLP Experiment')
     pygame.mouse.set_visible(False)
     scr.fill(BGCOLOR)
-    # Take full control of the mouse and keyboard
-    pygame.event.set_grab(True)
+    # Wait until we have mouse and keyboard focus
+    if not pygame.mouse.get_focused():
+        print('Cliquer sur la fenêtre MLP Experiment pour commencer')
+        while not pygame.mouse.get_focused():
+            time.sleep(.01)
+            pygame.event.get()
+        print('La souris est en position, merci de cliquer')
+        while not pygame.key.get_focused():
+            time.sleep(.01)
+            pygame.event.get()
 
     # Initialise the random numbers
     random.seed()

@@ -6,3 +6,5 @@ data/*.log
 .stim.wav
 .vscode/
 build
+py312MLP
+pythonmlp.egg-info
