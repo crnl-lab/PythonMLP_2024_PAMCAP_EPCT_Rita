@@ -16,6 +16,7 @@ from pathlib import Path
 import time
 from datetime import datetime
 import logging
+import re
 import pandas as pd
 
 import pygame
@@ -400,7 +401,9 @@ def runblock(block, participant):
             "kind":info,
             "stimulus":stim,
             "response":ans,
-            "count": count
+            "count": count,
+            "midpoint": mlp.get_midpoint_estimate(),
+            "fa_est": mlp.get_fa_estimate()
             })
         stim = mlp.next_stimulus()
         update_participant_proto_state(PROTO_PARTICIPANT_FILE, MLP_i_trial=trial)
@@ -608,7 +611,11 @@ LAST_PARTICIPANT = get_last_participant(CURRENT_PARTICIPANT_FILE)
 
 PARTICIPANT=""
 while len(PARTICIPANT) == 0:
-    PARTICIPANT = input_with_default("Participant: ", LAST_PARTICIPANT)
+    candidat = input_with_default("Participant: ", LAST_PARTICIPANT)
+    if re.fullmatch('[0-9]{3}_[A-Z]{2}', candidat):
+        PARTICIPANT=candidat
+    else:
+        print('model: 000_NP (3 digits _ 2 letters) - try again please\n\n')
 
 # Create log file for participant
 fh = logging.FileHandler(f"{PATH_DATA}/{PARTICIPANT}-anisochrony-{datetime.now():%Y%m%d-%H%M%S}.log")

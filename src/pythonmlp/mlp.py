@@ -265,6 +265,13 @@ History: {len(self.history)} answer(s)
         _, m_s, _ = zip(*opts)
         return np.mean(m_s) # if there are several, just return the average
 
+    def get_fa_estimate(self):
+        """ Return the current estimated false alarm rate """
+
+        opts = self.get_max_like()
+        a_s, _, _ = zip(*opts)
+        return np.mean(a_s)
+
 
 
 
