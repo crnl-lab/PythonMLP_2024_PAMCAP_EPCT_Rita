@@ -29,7 +29,7 @@ interface = devices.Activate(IAudioEndpointVolume._iid_, CLSCTX_ALL, None)
 volume = cast(interface, POINTER(IAudioEndpointVolume))
 vol = volume.GetMasterVolumeLevelScalar()
 print('initial master volume: ', vol)
-volume.SetMasterVolumeLevelScalar(1, None)
+volume.SetMasterVolumeLevelScalar(0.25, None)
 vol2 = volume.GetMasterVolumeLevelScalar()
 print('master volume set to', vol2)
 
