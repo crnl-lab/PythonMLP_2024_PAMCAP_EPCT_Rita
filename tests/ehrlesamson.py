@@ -136,7 +136,7 @@ class EhrleSamson:
             
             pygame.mixer.music.load(fname)
             pygame.mixer.music.play()
-            pygame.time.wait(2000)
+            pygame.time.wait(2500)
             pygame.mixer.music.unload()
 
         elif os.name=="posix": # That means we are in Mac OS
