@@ -42,7 +42,7 @@ class PitchTask:
     A4FREQ         = 440 # Hz
     DURATION       = int(.1*  SAMPLEFREQ) # in samples
     FADE_LENGTH    = int(.025*SAMPLEFREQ) # in n. of samples
-    SILENCE_LENGTH = int(.25* SAMPLEFREQ) # in samples (since the tone is 100ms long, we make the silence 250ms so the ITI is 350ms)
+    SILENCE_LENGTH = int(.4* SAMPLEFREQ) # in samples (since the tone is 100ms long, we make the silence 400ms so the ITI is 500ms)
 
 
 

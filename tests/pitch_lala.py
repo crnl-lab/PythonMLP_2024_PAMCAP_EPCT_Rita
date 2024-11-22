@@ -18,20 +18,20 @@ from datetime import datetime
 import logging
 import re
 import pandas as pd
-import re
-from pycaw.pycaw import AudioUtilities, ISimpleAudioVolume, IAudioEndpointVolume
-from ctypes import cast, POINTER
-from comtypes import CLSCTX_ALL
+if platform.system() == "Windows":
+    from pycaw.pycaw import AudioUtilities, ISimpleAudioVolume, IAudioEndpointVolume
+    from ctypes import cast, POINTER
+    from comtypes import CLSCTX_ALL
 
 
-devices = AudioUtilities.GetSpeakers()
-interface = devices.Activate(IAudioEndpointVolume._iid_, CLSCTX_ALL, None)
-volume = cast(interface, POINTER(IAudioEndpointVolume))
-vol = volume.GetMasterVolumeLevelScalar()
-print('initial master volume: ', vol)
-volume.SetMasterVolumeLevelScalar(0.25, None)
-vol2 = volume.GetMasterVolumeLevelScalar()
-print('master volume set to', vol2)
+    devices = AudioUtilities.GetSpeakers()
+    interface = devices.Activate(IAudioEndpointVolume._iid_, CLSCTX_ALL, None)
+    volume = cast(interface, POINTER(IAudioEndpointVolume))
+    vol = volume.GetMasterVolumeLevelScalar()
+    print('initial master volume: ', vol)
+    volume.SetMasterVolumeLevelScalar(0.25, None)
+    vol2 = volume.GetMasterVolumeLevelScalar()
+    print('master volume set to', vol2)
 
 import pygame
 from pitchtask import PitchTask
