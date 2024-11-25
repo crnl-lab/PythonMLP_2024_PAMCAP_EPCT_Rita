@@ -52,7 +52,7 @@ PATH_GESTION_META_PROTO_WD = PATH_GESTION_META_PROTO + 'Rita_Working_Dir/'
 
 ALL_BLOCKS = ["try","train","1"]
 
-DISPLAY_SIZE = (1024,600) # for widescreen
+DISPLAY_SIZE = (1920,1080) # for widescreen
 # The background of the screen
 BGCOLOR = (255,255,255)
 # The default font color
@@ -63,7 +63,7 @@ DISPLAYNUM = 1
 
 
 MAINFONT = None
-MAINFONTSIZE = 32
+MAINFONTSIZE = 48
 SCREEN = None
 
 CONTINUE_KEY  = [ pygame.K_RETURN ]
@@ -197,7 +197,7 @@ def waitforkey( keys ):
 def text_screen(surf, font, text,
                 bg_color = BGCOLOR,
                 fontcolor = FGCOLOR,
-                linespacing = 40,
+                linespacing = 60,
                 img = None):
     """ 
     Display the given text on the screen surface.

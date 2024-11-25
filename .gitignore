@@ -8,3 +8,6 @@ data/*.log
 build
 py312MLP
 pythonmlp.egg-info
+Lala_old
+Bunny_old
+.gitignore
